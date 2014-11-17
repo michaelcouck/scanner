@@ -43,29 +43,27 @@ class Scanner {
     val allAddresses = subnetUtils.getInfo.getAllAddresses
     val futures = Future.traverse(allAddresses.toList)(address => Future(
       Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
-        try {
-          if (inetAddress.isReachable(timeout)) {
-            Future.traverse(portRange.toList)(port => Future(
+        if (inetAddress.isReachable(timeout)) {
+          Future.traverse(portRange.toList)(port => Future(
+            try {
+              val socket = new Socket()
               try {
-                val socket = new Socket()
-                try {
-                  socket.connect(new InetSocketAddress(address, Integer.parseInt(port)), timeout)
-                  reachableAddresses.add(address + ":" + port)
-                  LOGGER.debug("Connected to : " + inetAddress + ", on port : " + port)
-                } catch {
-                  case e: Exception => if (LOGGER.isDebugEnabled) {
-                    LOGGER.error("Exception trying to connect to : " + address + ", on port : " + port, e)
-                  }
-                } finally {
-                  socket.close()
-                }
+                socket.connect(new InetSocketAddress(address, Integer.parseInt(port)), timeout)
+                reachableAddresses.add(address + ":" + port)
+                LOGGER.debug("Connected to : " + inetAddress + ", on port : " + port)
               } catch {
                 case e: Exception => if (LOGGER.isDebugEnabled) {
-                  LOGGER.error("Exception trying to disconnect from : " + address + ", on port : " + port, e)
+                  LOGGER.error("Exception trying to connect to : " + address + ", on port : " + port, e)
                 }
+              } finally {
+                socket.close()
               }
-            )).map(_.head)
-          }
+            } catch {
+              case e: Exception => if (LOGGER.isDebugEnabled) {
+                LOGGER.error("Exception trying to disconnect from : " + address + ", on port : " + port, e)
+              }
+            }
+          )).map(_.head)
         }
       ))
     ))
