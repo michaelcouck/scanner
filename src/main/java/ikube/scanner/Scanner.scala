@@ -6,7 +6,6 @@ import java.util.concurrent.{TimeUnit, Executors}
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.net.util.SubnetUtils
-import org.slf4j.LoggerFactory
 
 import scala.concurrent._
 import scala.concurrent.duration.Duration
@@ -21,8 +20,6 @@ import scala.concurrent.duration.Duration
  * @since 17-11-2014
  */
 class Scanner {
-
-  val LOGGER = LoggerFactory.getLogger(this.getClass.getName)
 
   /** Characters used for splitting the port range string. */
   val SEPARATOR_CHARACTERS = ",|; "
@@ -83,18 +80,14 @@ class Scanner {
               try {
                 socket.connect(new InetSocketAddress(address, Integer.parseInt(port)), timeout)
                 reachableAddresses.add(address + ":" + port)
-                LOGGER.debug("Connected to : " + inetAddress + ", on port : " + port)
               } catch {
-                case e: Exception => if (LOGGER.isDebugEnabled) {
-                  LOGGER.error("Exception trying to connect to : " + address + ", on port : " + port, e)
-                }
+                case e: Exception =>
+                  // Nothing
               } finally {
                 socket.close()
               }
             } catch {
-              case e: Exception => if (LOGGER.isDebugEnabled) {
-                LOGGER.error("Exception trying to disconnect from : " + address + ", on port : " + port, e)
-              }
+              case e: Exception => // Again nothing
             }
           )).map(_.head)
         }
