@@ -40,7 +40,7 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, timeout: Integer): util.ArrayList[String] = {
+  def scan(addressRange: String, timeout: Integer): util.List[String] = {
     val portRange = {
       List.range(0, 65535).toArray map (_.toString)
     }
@@ -56,7 +56,7 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: String, timeout: Integer): util.ArrayList[String] = {
+  def scan(addressRange: String, portRange: String, timeout: Integer): util.List[String] = {
     val ports = StringUtils.split(portRange, SEPARATOR_CHARACTERS)
     scan(addressRange, ports, timeout)
   }
@@ -70,7 +70,7 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: Array[String], timeout: Integer): util.ArrayList[String] = {
+  def scan(addressRange: String, portRange: Array[String], timeout: Integer): util.List[String] = {
     val reachableAddresses = new util.ArrayList[String]()
     val subnetUtils = new SubnetUtils(addressRange)
     val allAddresses = subnetUtils.getInfo.getAllAddresses
@@ -79,7 +79,7 @@ class Scanner {
         if (inetAddress.isReachable(timeout)) {
           Future.traverse(portRange.toList)(port => Future(
             try {
-              val socket = new Socket()()
+              val socket = new Socket()
               try {
                 socket.connect(new InetSocketAddress(address, Integer.parseInt(port)), timeout)
                 reachableAddresses.add(address + ":" + port)
