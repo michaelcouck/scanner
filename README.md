@@ -9,7 +9,7 @@ Please be responsible, i.e. no hacking. Remember, if you aren't getting paid for
 
 So, to run the scanner fro mthe command line:
 
-java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
+=> java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
 
 To use from a Java/Scala app just instantiate the class new Scanner() and call whatever methods you want to. Three methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of specified ports and a timeout, which scans only the ports defined on the range defined.
 
