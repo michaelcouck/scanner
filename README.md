@@ -6,3 +6,11 @@ Because I couldn't find a decent tool to scan networks looking for open ports, I
 Having said that, it is multi threaded, which helps a lot. Note that there are at least 1000 threads created, so probably not a good idea to run it on Android.
 
 Please be responsible, i.e. no hacking. Remember, if you aren't getting paid for it what is the point, right?
+
+So, to run the scanner fro mthe command line:
+
+java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
+
+To use from a Java/Scala app just instantiate the class new Scanner() and call whatever methods you want to. Three methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of specified ports and a timeout, which scans only the ports defined on the range defined.
+
+JavaDoc all done of course, with live examples in the unit test.
