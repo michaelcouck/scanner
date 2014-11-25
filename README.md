@@ -7,7 +7,7 @@ Having said that, it is multi threaded, which helps a lot. Note that there are a
 
 Please be responsible, i.e. no hacking. Remember, if you aren't getting paid for it what is the point, right?
 
-So, to run the scanner fro mthe command line:
+So, to run the scanner from the command line:
 
 => java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
 
