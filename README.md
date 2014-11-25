@@ -22,7 +22,7 @@ There must be a lib folder in the execution folder, with the dependencies:
 * scala-library-2.11.0-M3.jar
 * scala-reflect-2.11.0-M3.jar
  
-The classpath is lib/* in other words.
+The classpath in the manifest is lib/* in other words.
 
 To use from a Java/Scala app just instantiate the class new Scanner() and call whatever methods you want to. Three methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of specified ports and a timeout, which scans only the ports defined on the range defined.
 
