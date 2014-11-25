@@ -11,6 +11,13 @@ So, to run the scanner from the command line:
 
 => java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
 
+There must be a lib folder in the execution folder, with the dependencies:
+
+* commons-net-2.0.jar
+* commons-lang-2.6.jar
+* scala-library-2.11.0-M3.jar
+* scala-reflect-2.11.0-M3.jar
+
 To use from a Java/Scala app just instantiate the class new Scanner() and call whatever methods you want to. Three methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of specified ports and a timeout, which scans only the ports defined on the range defined.
 
 JavaDoc all done of course, with live examples in the unit test.
