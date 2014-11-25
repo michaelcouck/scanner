@@ -7,6 +7,7 @@ import java.util.concurrent.{TimeUnit, Executors}
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.net.util.SubnetUtils
 
+import scala.collection.JavaConversions._
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 
@@ -19,14 +20,49 @@ import scala.concurrent.duration.Duration
  * @version 01.00
  * @since 17-11-2014
  */
-class Scanner {
+object Scanner {
 
   /** Characters used for splitting the port range string. */
   val SEPARATOR_CHARACTERS = ",|; "
   /**
    * We define an executor with a few mode threads as the built in one has too few for good performance in this case.
    */
-  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(100))
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(250))
+
+  /**
+   * Main method to execute from the command line, takes the ip range, then optionally the
+   * port range, and then the timeout in milliseconds for the pinging, anything else gets an
+   * exception.
+   *
+   * @param args and array of strings, the ip range(eg. 192.168.1.0/24), optionally the
+   *             port range(e.g. 0-1024) and then the timeout for the socket access in milliseconds,
+   *             and the verbose flag
+   */
+  def main(args: Array[String]): Unit = {
+    try {
+      println("Scanning ip range and ports and timeout : " + args(0) + ", " + args(1))
+      var addressesAndPorts: util.List[String] = null
+      if (args.length == 2) {
+        addressesAndPorts = scan(args(0), Integer.parseInt(args(1)), verbose = false)
+      } else if (args.length == 3) {
+        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), verbose = false)
+      } else if (args.length == 4) {
+        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), args(3).toBoolean)
+      } else {
+        throw new RuntimeException()
+      }
+      println("Open addresses and ports : ")
+      addressesAndPorts.foreach {
+        addressAndPort => addressesAndPorts
+          println("    : " + addressAndPort)
+      }
+    } catch {
+      case e: Exception =>
+        println("Usage: java -jar scanner.jar ip-range [port-range] timeout-millis")
+        throw e
+    }
+    System.exit(0)
+  }
 
   /**
    * This method will scan all ports on the entire range defined in the parameter list. The range
@@ -37,11 +73,11 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, timeout: Integer): util.List[String] = {
+  def scan(addressRange: String, timeout: Integer, verbose: Boolean): util.List[String] = {
     val portRange = {
       List.range(0, 65535).toArray map (_.toString)
     }
-    scan(addressRange, portRange, timeout)
+    scan(addressRange, portRange, timeout, verbose)
   }
 
   /**
@@ -53,9 +89,9 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: String, timeout: Integer): util.List[String] = {
+  def scan(addressRange: String, portRange: String, timeout: Integer, verbose: Boolean): util.List[String] = {
     val ports = StringUtils.split(portRange, SEPARATOR_CHARACTERS)
-    scan(addressRange, ports, timeout)
+    scan(addressRange, ports, timeout, verbose)
   }
 
   /**
@@ -67,7 +103,7 @@ class Scanner {
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: Array[String], timeout: Integer): util.List[String] = {
+  def scan(addressRange: String, portRange: Array[String], timeout: Integer, verbose: Boolean): util.List[String] = {
     val reachableAddresses = new util.ArrayList[String]()
     val subnetUtils = new SubnetUtils(addressRange)
     val allAddresses = subnetUtils.getInfo.getAllAddresses
@@ -76,16 +112,8 @@ class Scanner {
         if (inetAddress.isReachable(timeout)) {
           Future.traverse(portRange.toList)(port => Future(
             try {
-              val socket = new Socket()
-              try {
-                socket.connect(new InetSocketAddress(address, Integer.parseInt(port)), timeout)
-                reachableAddresses.add(address + ":" + port)
-              } catch {
-                case e: Exception =>
-                  // Nothing
-              } finally {
-                socket.close()
-              }
+              val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
+              reachableAddresses.add(addressAndPort)
             } catch {
               case e: Exception => // Again nothing
             }
@@ -95,6 +123,30 @@ class Scanner {
     ))
     Await.ready(futures.map(_.head), Duration.apply(Int.MaxValue, TimeUnit.SECONDS))
     reachableAddresses
+  }
+
+  /**
+   * Scans a specific address and port, returning the address and port combination
+   * if the address is reachable and the port is open on the machine.
+   *
+   * @param address the ip address to try to connect to
+   * @param port the port to connect to on the remove machine
+   * @param timeout the time to wait for the socket in milliseconds
+   * @return the ip address and the port concatenated if this address is reachable and open
+   */
+  def scan(address: String, port: Integer, timeout: Integer, verbose: Boolean): String = {
+    val socket = new Socket()
+    try {
+      if (verbose) {
+        println("    scanning : " + address + ":" + port)
+      }
+      socket.connect(new InetSocketAddress(address, port), timeout)
+      address + ":" + port
+    } catch {
+      case e: Exception => throw e
+    } finally {
+      socket.close()
+    }
   }
 
 }

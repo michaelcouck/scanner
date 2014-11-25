@@ -9,10 +9,27 @@ import org.junit.{Assert, Test}
  */
 class ScannerTest {
 
+  val timeout = "250"
+  val portRange = "0-1024"
+  val ipRange = "192.168.1.0/24"
+
+  val scanner = Scanner
+
+  @Test
+  def main() {
+    scanner.main(Array(ipRange, timeout))
+    scanner.main(Array(ipRange, portRange, timeout))
+    try {
+      scanner.main(Array(ipRange))
+      Assert.fail("Only one argument, need at least two")
+    } catch {
+      case e: Exception => // Expected
+    }
+  }
+
   @Test
   def scan() {
-    val scanner = new Scanner()
-    val addresses = scanner.scan("192.168.1.0/24", 250).toArray
+    val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), false).toArray
     addresses.foreach(address => println(address))
     Assert.assertTrue(addresses.length > 0)
   }
