@@ -27,7 +27,7 @@ object Scanner {
   /**
    * We define an executor with a few mode threads as the built in one has too few for good performance in this case.
    */
-  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(250))
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(100))
 
   /**
    * Main method to execute from the command line, takes the ip range, then optionally the
@@ -61,7 +61,8 @@ object Scanner {
         println("Usage: java -jar scanner.jar ip-range [port-range] timeout-millis")
         throw e
     }
-    System.exit(0)
+    // Thread.sleep(60000)
+    // System.exit(0)
   }
 
   /**
@@ -104,24 +105,31 @@ object Scanner {
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
   def scan(addressRange: String, portRange: Array[String], timeout: Integer, verbose: Boolean): util.List[String] = {
+    var totalAddressesAndPortsScanned = 0
     val reachableAddresses = new util.ArrayList[String]()
     val subnetUtils = new SubnetUtils(addressRange)
     val allAddresses = subnetUtils.getInfo.getAllAddresses
     val futures = Future.traverse(allAddresses.toList)(address => Future(
-      Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
-        if (inetAddress.isReachable(timeout)) {
-          Future.traverse(portRange.toList)(port => Future(
-            try {
-              val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
-              reachableAddresses.add(addressAndPort)
-            } catch {
-              case e: Exception => // Again nothing
+      {
+        Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
+          {
+            if (inetAddress.isReachable(timeout)) {
+              Future.traverse(portRange.toList)(port => Future(
+                try {
+                  totalAddressesAndPortsScanned += 1
+                  val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
+                  reachableAddresses.add(addressAndPort)
+                } catch {
+                  case e: Exception => // Again nothing
+                }
+              )).map(_.head)
             }
-          )).map(_.head)
-        }
-      ))
+          }
+        ))
+      }
     ))
     Await.ready(futures.map(_.head), Duration.apply(Int.MaxValue, TimeUnit.SECONDS))
+    println("Total addresses and ports scanned : " + totalAddressesAndPortsScanned)
     reachableAddresses
   }
 

@@ -29,7 +29,7 @@ class ScannerTest {
 
   @Test
   def scan() {
-    val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), false).toArray
+    val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), verbose = false).toArray
     addresses.foreach(address => println(address))
     Assert.assertTrue(addresses.length > 0)
   }
