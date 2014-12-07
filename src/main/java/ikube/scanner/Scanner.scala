@@ -36,18 +36,20 @@ object Scanner {
    *
    * @param args and array of strings, the ip range(eg. 192.168.1.0/24), optionally the
    *             port range(e.g. 0-1024) and then the timeout for the socket access in milliseconds,
-   *             and the verbose flag
+   *             and the verbose flag. Force as the final flag will ignore the reachable test.
    */
   def main(args: Array[String]): Unit = {
     try {
       println("Scanning ip range and ports and timeout : " + args(0) + ", " + args(1))
       var addressesAndPorts: util.List[String] = null
       if (args.length == 2) {
-        addressesAndPorts = scan(args(0), Integer.parseInt(args(1)), verbose = false)
+        addressesAndPorts = scan(args(0), Integer.parseInt(args(1)), verbose = false, force = false)
       } else if (args.length == 3) {
-        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), verbose = false)
+        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), verbose = false, force = false)
       } else if (args.length == 4) {
-        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), args(3).toBoolean)
+        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), args(3).toBoolean, force = false)
+      } else if (args.length == 5) {
+        addressesAndPorts = scan(args(0), args(1), Integer.parseInt(args(2)), args(3).toBoolean, args(4).toBoolean)
       } else {
         throw new RuntimeException()
       }
@@ -61,24 +63,23 @@ object Scanner {
         println("Usage: java -jar scanner.jar ip-range [port-range] timeout-millis")
         throw e
     }
-    // Thread.sleep(60000)
-    // System.exit(0)
   }
 
   /**
    * This method will scan all ports on the entire range defined in the parameter list. The range
-   * is in the format "192.168.1.0/24". In this particular case the range will be 0-255 for the network
+   * is in the format "192.168.1.0/24"(CIDR). In this particular case the range will be 0-255 for the network
    * segment part.
    *
    * @param addressRange the range of addresses to scan for ports on the network, in the format "192.168.1.0/24"
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
+   * @param force whether to test the ip first to see if it is reachable, if true then the reachable flag will be ignored
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, timeout: Integer, verbose: Boolean): util.List[String] = {
+  def scan(addressRange: String, timeout: Integer, verbose: Boolean, force: Boolean): util.List[String] = {
     val portRange = {
       List.range(0, 65535).toArray map (_.toString)
     }
-    scan(addressRange, portRange, timeout, verbose)
+    scan(addressRange, portRange, timeout, verbose, force)
   }
 
   /**
@@ -88,11 +89,12 @@ object Scanner {
    * @param addressRange the range of addresses to scan for ports on the network, in the format "192.168.1.0/24"
    * @param portRange the range of ports to scan, in the format "80,8080,3306,1521,..."
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
+   * @param force whether to test the ip first to see if it is reachable, if true then the reachable flag will be ignored
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: String, timeout: Integer, verbose: Boolean): util.List[String] = {
+  def scan(addressRange: String, portRange: String, timeout: Integer, verbose: Boolean, force: Boolean): util.List[String] = {
     val ports = StringUtils.split(portRange, SEPARATOR_CHARACTERS)
-    scan(addressRange, ports, timeout, verbose)
+    scan(addressRange, ports, timeout, verbose, force)
   }
 
   /**
@@ -102,31 +104,36 @@ object Scanner {
    * @param addressRange the range of addresses to scan for ports on the network, in the format "192.168.1.0/24"
    * @param portRange the range of ports to scan, in the format "80,8080,3306,1521,..."
    * @param timeout the timeout to check first for pinging the machines, then trying the individual ports
+   * @param force whether to test the ip first to see if it is reachable, if true then the reachable flag will be ignored
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
-  def scan(addressRange: String, portRange: Array[String], timeout: Integer, verbose: Boolean): util.List[String] = {
+  def scan(addressRange: String, portRange: Array[String], timeout: Integer, verbose: Boolean, force: Boolean): util.List[String] = {
     var totalAddressesAndPortsScanned = 0
     val reachableAddresses = new util.ArrayList[String]()
     val subnetUtils = new SubnetUtils(addressRange)
     val allAddresses = subnetUtils.getInfo.getAllAddresses
     val futures = Future.traverse(allAddresses.toList)(address => Future(
+    {
+      Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
       {
-        Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
-          {
-            if (inetAddress.isReachable(timeout)) {
-              Future.traverse(portRange.toList)(port => Future(
-                try {
-                  totalAddressesAndPortsScanned += 1
-                  val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
-                  reachableAddresses.add(addressAndPort)
-                } catch {
-                  case e: Exception => // Again nothing
-                }
-              )).map(_.head)
+        val reachable = inetAddress.isReachable(timeout)
+        if (verbose) {
+          println("Ip : " + address + ", reachable : " + reachable)
+        }
+        if (force || reachable) {
+          Future.traverse(portRange.toList)(port => Future(
+            try {
+              totalAddressesAndPortsScanned += 1
+              val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
+              reachableAddresses.add(addressAndPort)
+            } catch {
+              case e: Exception => // Again nothing
             }
-          }
-        ))
+          )).map(_.head)
+        }
       }
+      ))
+    }
     ))
     Await.ready(futures.map(_.head), Duration.apply(Int.MaxValue, TimeUnit.SECONDS))
     println("Total addresses and ports scanned : " + totalAddressesAndPortsScanned)

@@ -29,9 +29,18 @@ class ScannerTest {
 
   @Test
   def scan() {
-    val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), verbose = false).toArray
+    val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), verbose = false, force = false).toArray
     addresses.foreach(address => println(address))
     Assert.assertTrue(addresses.length > 0)
+  }
+
+  @Test
+  def scanSingleAddress(): Unit = {
+    val addressAndPort = scanner.scan("192.168.1.20", 8500, 1000, verbose = true)
+    println("Address : " + addressAndPort)
+
+    val addresses = scanner.scan("192.168.1.20/28", Integer.parseInt(timeout), verbose = false, force = true).toArray
+    addresses.foreach(address => println(address))
   }
 
 }

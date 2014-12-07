@@ -4,8 +4,8 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.11.0-M3" />
-        <option name="compilerOptions" value="-make:transitive -dependencyfile $MODULE_DIR$/target/.scala_dependencies" />
+        <option name="compilerLibraryName" value="Maven: org.scala-lang:scala-compiler-bundle:2.10.3" />
+        <option name="compilerOptions" value="-dependencyfile $MODULE_DIR$/target/.scala_dependencies" />
         <option name="vmOptions" value="" />
       </configuration>
     </facet>
@@ -21,9 +21,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.11.0-M3" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.11.0-M3" level="project" />
-    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.11.0-M3" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-compiler:2.10.3" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-library:2.10.3" level="project" />
+    <orderEntry type="library" name="Maven: org.scala-lang:scala-reflect:2.10.3" level="project" />
     <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
     <orderEntry type="library" name="Maven: commons-net:commons-net:2.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.8.2" level="project" />
