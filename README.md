@@ -14,7 +14,13 @@ Download the jar from [Artifactory](http://ikube.be/artifactory) in the libs-rel
 
 So, to run the scanner from the command line:
 
-=> java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
+=> java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds) [verbose] [force]
+
+For example:
+
+=> java -jar scanner-1.6.jar 192.168.1.1/24 0-1024 100 false true
+
+Will scan the network from 0 - 255, ports 0 to 1024 with a timeout of 100 millis, not verbose and force all ip addresses, even if they seem not to be reachable using a ping echo(Java doesn't support real ICMP, some kind of ICMP echo they say, and iptables will return false incidentally, but not ufw, hmmm...).
 
 There must be a lib folder in the execution folder, with the dependencies:
 
