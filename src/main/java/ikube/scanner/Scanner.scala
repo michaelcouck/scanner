@@ -1,8 +1,8 @@
 package ikube.scanner
 
-import java.net.{InetSocketAddress, Socket, InetAddress}
+import java.net.{InetAddress, InetSocketAddress, Socket}
 import java.util
-import java.util.concurrent.{TimeUnit, Executors}
+import java.util.concurrent.{Executors, TimeUnit}
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.net.util.SubnetUtils
@@ -22,8 +22,19 @@ import scala.concurrent.duration.Duration
  */
 object Scanner {
 
+  /**
+   * Whether to exit the vm on finishing.
+   */
+  var exit = true
+  /**
+   * This will be filled in with the addresses and ports that are scanned and
+   * available, and held here for convenience in an instance variable. Typically this
+   * will not be accessed outside the class.
+   */
+  var addressesAndPorts: util.List[String] = null
+
   /** Characters used for splitting the port range string. */
-  val SEPARATOR_CHARACTERS = ",|; "
+  val SEPARATOR_CHARACTERS = "-,|; "
   /**
    * We define an executor with a few mode threads as the built in one has too few for good performance in this case.
    */
@@ -41,7 +52,6 @@ object Scanner {
   def main(args: Array[String]): Unit = {
     try {
       println("Scanning ip range and ports and timeout : " + args(0) + ", " + args(1))
-      var addressesAndPorts: util.List[String] = null
       if (args.length == 2) {
         addressesAndPorts = scan(args(0), Integer.parseInt(args(1)), verbose = false, force = false)
       } else if (args.length == 3) {
@@ -62,6 +72,9 @@ object Scanner {
       case e: Exception =>
         println("Usage: java -jar scanner.jar ip-range [port-range] timeout-millis")
         throw e
+    }
+    if (exit) {
+      System.exit(0)
     }
   }
 
@@ -93,7 +106,8 @@ object Scanner {
    * @return the ip addresses and ports as a list, in the format "192.168.1.1:8080"
    */
   def scan(addressRange: String, portRange: String, timeout: Integer, verbose: Boolean, force: Boolean): util.List[String] = {
-    val ports = StringUtils.split(portRange, SEPARATOR_CHARACTERS)
+    val portsRangeArray = StringUtils.split(portRange, SEPARATOR_CHARACTERS)
+    val ports = List.range(Integer.parseInt(portsRangeArray.head), Integer.parseInt(portsRangeArray.last)).toArray map (_.toString)
     scan(addressRange, ports, timeout, verbose, force)
   }
 
@@ -117,14 +131,15 @@ object Scanner {
       Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
       {
         val reachable = inetAddress.isReachable(timeout)
+        val mustScan = force || reachable
         if (verbose) {
-          println("Ip : " + address + ", reachable : " + reachable)
+          println("Ip : " + address + ", reachable : " + reachable + ", must scan : " + mustScan)
         }
-        if (force || reachable) {
+        if (mustScan) {
           Future.traverse(portRange.toList)(port => Future(
             try {
               totalAddressesAndPortsScanned += 1
-              val addressAndPort = scan(address, Integer.parseInt(port), timeout, verbose)
+              val addressAndPort = scanAddressPortTimeoutVerbose(address, Integer.parseInt(port), timeout, verbose)
               reachableAddresses.add(addressAndPort)
             } catch {
               case e: Exception => // Again nothing
@@ -136,7 +151,9 @@ object Scanner {
     }
     ))
     Await.ready(futures.map(_.head), Duration.apply(Int.MaxValue, TimeUnit.SECONDS))
-    println("Total addresses and ports scanned : " + totalAddressesAndPortsScanned)
+    if (verbose) {
+      println("Total addresses and ports scanned : " + totalAddressesAndPortsScanned)
+    }
     reachableAddresses
   }
 
@@ -149,7 +166,7 @@ object Scanner {
    * @param timeout the time to wait for the socket in milliseconds
    * @return the ip address and the port concatenated if this address is reachable and open
    */
-  def scan(address: String, port: Integer, timeout: Integer, verbose: Boolean): String = {
+  def scanAddressPortTimeoutVerbose(address: String, port: Integer, timeout: Integer, verbose: Boolean): String = {
     val socket = new Socket()
     try {
       if (verbose) {

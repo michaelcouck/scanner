@@ -1,6 +1,6 @@
 package ikube.scanner
 
-import org.junit.{Assert, Test}
+import org.junit.{Assert, Before, Test}
 
 /**
  * @author Michael Couck
@@ -9,38 +9,57 @@ import org.junit.{Assert, Test}
  */
 class ScannerTest {
 
-  val timeout = "250"
+  val timeout = "100"
   val portRange = "0-1024"
-  val ipRange = "192.168.1.0/24"
+  val ipRange = "192.168.1.1/24"
 
   val scanner = Scanner
 
-  @Test
-  def main() {
-    scanner.main(Array(ipRange, timeout))
-    scanner.main(Array(ipRange, portRange, timeout))
-    try {
-      scanner.main(Array(ipRange))
-      Assert.fail("Only one argument, need at least two")
-    } catch {
-      case e: Exception => // Expected
-    }
+  @Before
+  def before() {
+    scanner.exit = false
+  }
+
+  @Test(expected = classOf[RuntimeException])
+  def fail() {
+    scanner.main(Array(ipRange))
   }
 
   @Test
-  def scan() {
+  def rangeTimeout() {
+    scanner.main(Array(ipRange, timeout))
+    Assert.assertTrue(scanner.addressesAndPorts.size() > 0)
+  }
+
+  @Test
+  def rangePortTimeout() {
+    scanner.main(Array(ipRange, portRange, timeout))
+    Assert.assertTrue(scanner.addressesAndPorts.size() > 0)
+  }
+
+  @Test
+  def rangePortTimeoutVerbose() {
+    scanner.main(Array(ipRange, portRange, timeout, "true"))
+    Assert.assertTrue(scanner.addressesAndPorts.size() > 0)
+  }
+
+  @Test
+  def rangePortTimeoutVerboseForce() {
+    scanner.main(Array(ipRange, portRange, timeout, "false", "true"))
+    Assert.assertTrue(scanner.addressesAndPorts.size() > 0)
+  }
+
+  @Test
+  def scanRangeVerboseForce() {
     val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), verbose = false, force = false).toArray
-    addresses.foreach(address => println(address))
+    addresses.foreach(address => println("Reachable address and port : " + address))
     Assert.assertTrue(addresses.length > 0)
   }
 
   @Test
   def scanSingleAddress(): Unit = {
-    val addressAndPort = scanner.scan("192.168.1.20", 8500, 1000, verbose = true)
-    println("Address : " + addressAndPort)
-
-    val addresses = scanner.scan("192.168.1.20/28", Integer.parseInt(timeout), verbose = false, force = true).toArray
-    addresses.foreach(address => println(address))
+    val addressAndPort = scanner.scanAddressPortTimeoutVerbose("192.168.1.20", 8500, 1000, verbose = true)
+    Assert.assertEquals("192.168.1.20:8500", addressAndPort)
   }
 
 }
