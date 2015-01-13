@@ -1,6 +1,8 @@
 scanner
 =======
 
+A Scala/Java multi threaded port scanner.
+
 Because I couldn't find a decent tool to scan networks looking for open ports, I decided to write one. Just a few 
 lines of code, no exception handling, i.e. if it fails it fails, tant pis. No retry either as it turns out, who wants 
 to retry 65535 * n address/port combinations, where n is the number of addresses to scan?
