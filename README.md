@@ -1,12 +1,12 @@
 scanner
 =======
 
-Because I couldn't find a decent tool to scan networks looking for open ports, I decided to write one. Just a few 
-lines of code, no exception handling, i.e. if it fails it fails, tant pis. No retry either as it turns out, who wants 
-to retry 65535 * n address/port combinations, where n is the number of addresses to scan?
+A port scanner written in Scala/Java, multi threaded of course.
+
+Because I couldn't find a decent tool to scan networks looking for open ports, in Java, I decided to write one. Just a few lines of code, no exception handling, i.e. if it fails it fails, tant pis. No retry either as it turns out, who wants to retry 65535 * n address/port combinations, where n is the number of addresses to scan?
 
 Having said that, it is multi threaded, which helps a lot. Note that there are at least 100 threads created, so 
-probably not a good idea to run it on Android.
+probably not a good idea to run it on Android ;)
 
 Please be responsible, i.e. no hacking. Remember, if you aren't getting paid for it what is the point, right?
 
@@ -14,7 +14,13 @@ Download the jar from [Artifactory](http://ikube.be/artifactory) in the libs-rel
 
 So, to run the scanner from the command line:
 
-=> java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds)
+=> java -jar scanner.jar ip-range [port-range (eg. 0-1024, optional)] timeout(in milliseconds) [verbose] [force]
+
+For example:
+
+=> java -jar scanner-1.6.jar 192.168.1.1/24 0-1024 100 false true
+
+Will scan the network from 0 - 255, ports 0 to 1024 with a timeout of 100 millis, not verbose and force all ip addresses, even if they seem not to be reachable using a ping echo(Java doesn't support real ICMP, some kind of ICMP echo they say, and iptables will return false incidentally, but not ufw, hmmm...).
 
 There must be a lib folder in the execution folder, with the dependencies:
 
