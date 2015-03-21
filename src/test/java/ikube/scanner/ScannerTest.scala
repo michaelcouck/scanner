@@ -12,6 +12,8 @@ class ScannerTest {
   val timeout = "100"
   val portRange = "0-1024"
   val ipRange = "192.168.1.1/24"
+  val ipAddress = "192.168.1.42"
+  val port = 8500
 
   val scanner = Scanner
 
@@ -58,8 +60,8 @@ class ScannerTest {
 
   @Test
   def scanSingleAddress(): Unit = {
-    val addressAndPort = scanner.scanAddressPortTimeoutVerbose("192.168.1.20", 8500, 1000, verbose = true)
-    Assert.assertEquals("192.168.1.20:8500", addressAndPort)
+    val addressAndPort = scanner.scanAddressPortTimeoutVerbose(ipAddress, port, 1000, verbose = true)
+    Assert.assertEquals(ipAddress + ":" + port, addressAndPort)
   }
 
 }
