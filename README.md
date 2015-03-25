@@ -33,8 +33,12 @@ The classpath in the manifest is lib/* in other words, so create a folder called
 as the scanner.jar, and put the above libraries in it. 
 
 To use from a Java/Scala app just instantiate the class new Scanner() and call whatever methods you want to. Three 
-methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a 
-port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of 
-specified ports and a timeout, which scans only the ports defined on the range defined.
+methods, one that takes an ip range and scans the entire network range, every port. One that takes the ip range and a port range, also the entire network range but only the ports specified, and one that takes the ip range, a list of specified ports and a timeout, which scans only the ports defined on the range defined.
+
+=> List<String> addressesAndPorts = Scanner.scan("192.168.1.1/24", 60000, Boolean.FALSE, Boolean.TRUE);
 
 JavaDoc all done of course, with live examples in the unit test.
+
+=> https://github.com/michaelcouck/scanner/blob/master/src/test/java/ikube/scanner/ScannerTest.scala
+
+Feel free to contact me if you have issues/feature requests, or want to contribute/fix something - michael dot couck at gmail dot com.
