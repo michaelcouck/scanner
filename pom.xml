@@ -6,7 +6,7 @@
 
     <groupId>ikube</groupId>
     <artifactId>scanner</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.7-SNAPSHOT</version>
 
     <scm>
         <url>https://github.com/michaelcouck/scanner</url>
