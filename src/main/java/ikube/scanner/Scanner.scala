@@ -38,7 +38,7 @@ object Scanner {
   /**
    * We define an executor with a few mode threads as the built in one has too few for good performance in this case.
    */
-  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
+  implicit val ec = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(100))
 
   /**
    * Main method to execute from the command line, takes the ip range, then optionally the
