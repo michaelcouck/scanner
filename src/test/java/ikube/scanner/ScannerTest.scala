@@ -1,18 +1,20 @@
 package ikube.scanner
 
+import java.util
+
 import org.junit.{Assert, Before, Test}
 
 /**
- * @author Michael Couck
- * @version 01.00
- * @since 17-11-2014
- */
+  * @author Michael Couck
+  * @version 01.00
+  * @since 17-11-2014
+  */
 class ScannerTest {
 
   val timeout = "100"
   val portRange = "0-1024"
   val ipRange = "192.168.1.1/24"
-  val ipAddress = "192.168.1.42"
+  val ipAddress = "192.168.1.43"
   val port = 8500
 
   val scanner = Scanner
@@ -55,13 +57,20 @@ class ScannerTest {
   def scanRangeVerboseForce() {
     val addresses = scanner.scan(ipRange, Integer.parseInt(timeout), verbose = false, force = false).toArray
     addresses.foreach(address => println("Reachable address and port : " + address))
-    Assert.assertTrue(addresses.length > 0)
+    Assert.assertTrue(addresses.nonEmpty)
   }
 
   @Test
   def scanSingleAddress(): Unit = {
     val addressAndPort = scanner.scanAddressPortTimeoutVerbose(ipAddress, port, 1000, verbose = true)
     Assert.assertEquals(ipAddress + ":" + port, addressAndPort)
+  }
+
+  @Test
+  def networkScan() {
+    val addresses = scanner.scan(ipRange, "0-65535", 102400, verbose = false, force = false).toArray
+    util.Arrays.sort(addresses)
+    addresses.foreach(address => println("IP & port : " + address))
   }
 
 }

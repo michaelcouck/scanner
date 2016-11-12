@@ -128,13 +128,13 @@ object Scanner {
     val allAddresses = subnetUtils.getInfo.getAllAddresses
     val futures = Future.traverse(allAddresses.toList)(address => Future(
     {
+      print(verbose, "Traversing : " + address)
       Future.traverse(InetAddress.getAllByName(address).toList)(inetAddress => Future(
       {
+        print(verbose, "           : " + address)
         val reachable = inetAddress.isReachable(timeout)
         val mustScan = force || reachable
-        if (verbose) {
-          println("Ip : " + address + ", reachable : " + reachable + ", must scan : " + mustScan)
-        }
+        print(verbose, "Ip : " + address + ", reachable : " + reachable + ", must scan : " + mustScan)
         if (mustScan) {
           Future.traverse(portRange.toList)(port => Future(
             try {
@@ -151,9 +151,7 @@ object Scanner {
     }
     ))
     Await.ready(futures.map(_.head), Duration.apply(Int.MaxValue, TimeUnit.SECONDS))
-    if (verbose) {
-      println("Total addresses and ports scanned : " + totalAddressesAndPortsScanned)
-    }
+    print(verbose, "Total addresses and ports successfully scanned : " + totalAddressesAndPortsScanned)
     reachableAddresses
   }
 
@@ -169,15 +167,20 @@ object Scanner {
   def scanAddressPortTimeoutVerbose(address: String, port: Integer, timeout: Integer, verbose: Boolean): String = {
     val socket = new Socket()
     try {
-      if (verbose) {
-        println("    scanning : " + address + ":" + port)
-      }
+      print(verbose, "    scanning : " + address + ":" + port + ":" + timeout)
       socket.connect(new InetSocketAddress(address, port), timeout)
+      print(verbose, "    connected to : " + address + ":" + port + ":" + timeout)
       address + ":" + port
     } catch {
       case e: Exception => throw e
     } finally {
       socket.close()
+    }
+  }
+
+  def print(verbose: Boolean, message: String): Unit = {
+    if (verbose) {
+      println(message)
     }
   }
 
