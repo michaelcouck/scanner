@@ -25,11 +25,11 @@
     </developers>
 
     <distributionManagement>
-        <site>
+        <!--<site>
             <id>ikube-releases</id>
             <name>ikube-releases</name>
             <url>file:/home/michael/.m2/repository</url>
-        </site>
+        </site>-->
         <repository>
             <id>libs-release-local</id>
             <name>libs-release-local</name>
