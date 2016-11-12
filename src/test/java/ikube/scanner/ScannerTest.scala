@@ -62,13 +62,13 @@ class ScannerTest {
 
   @Test
   def scanSingleAddress(): Unit = {
-    val addressAndPort = scanner.scanAddressPortTimeoutVerbose(ipAddress, port, 1000, verbose = true)
+    val addressAndPort = scanner.scanAddressPortTimeoutVerbose(ipAddress, port, Integer.parseInt(timeout), verbose = true)
     Assert.assertEquals(ipAddress + ":" + port, addressAndPort)
   }
 
   @Test
   def networkScan() {
-    val addresses = scanner.scan(ipRange, "0-65535", 102400, verbose = false, force = false).toArray
+    val addresses = scanner.scan(ipRange, "0-65535", Integer.parseInt(timeout), verbose = false, force = false).toArray
     util.Arrays.sort(addresses)
     addresses.foreach(address => println("IP & port : " + address))
   }
