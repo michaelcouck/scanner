@@ -2,14 +2,13 @@ package ikube.scanner
 
 import java.util
 
-import org.junit.{Assert, Before, Ignore, Test}
+import org.junit.{Assert, Before, Test}
 
 /**
   * @author Michael Couck
   * @version 01.00
   * @since 17-11-2014
   */
-@Ignore
 class ScannerTest {
 
   val timeout = "100"
