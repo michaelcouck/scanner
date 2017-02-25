@@ -140,7 +140,10 @@ object Scanner {
             try {
               totalAddressesAndPortsScanned += 1
               val addressAndPort = scanAddressPortTimeoutVerbose(address, Integer.parseInt(port), timeout, verbose)
-              reachableAddresses.add(addressAndPort)
+              if (addressAndPort != null) {
+                print(verbose, "Adding ip and port : " + addressAndPort)
+                reachableAddresses.add(addressAndPort)
+              }
             } catch {
               case e: Exception => // Again nothing
             }
@@ -170,12 +173,19 @@ object Scanner {
       print(verbose, "    scanning : " + address + ":" + port + ":" + timeout)
       socket.connect(new InetSocketAddress(address, port), timeout)
       print(verbose, "    connected to : " + address + ":" + port + ":" + timeout)
-      address + ":" + port
+      return address + ":" + port
     } catch {
-      case e: Exception => throw e
+      case e: Exception => // Nothing
     } finally {
-      socket.close()
+      try {
+        if (socket != null && socket.isConnected) {
+          socket.close()
+        }
+      } catch {
+        case e: Exception => // Nothing
+      }
     }
+    null
   }
 
   def print(verbose: Boolean, message: String): Unit = {
