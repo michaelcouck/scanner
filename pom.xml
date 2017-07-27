@@ -7,12 +7,12 @@
     <artifactId>scanner</artifactId>
     <version>1.10-SNAPSHOT</version>
 
-    <scm>
+    <!-- scm>
         <url>https://github.com/michaelcouck/scanner</url>
         <connection>scm:git:ssh://github.com/michaelcouck/scanner.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/michaelcouck/scanner.git</developerConnection>
         <tag>HEAD</tag>
-    </scm>
+    </scm -->
 
     <developers>
         <developer>
@@ -23,7 +23,7 @@
         </developer>
     </developers>
 
-    <distributionManagement>
+    <!-- distributionManagement>
         <repository>
             <id>libs-release-local</id>
             <name>libs-release-local</name>
@@ -34,7 +34,7 @@
             <name>libs-snapshot-local</name>
             <url>http://ikube.be/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement -->
 
     <properties>
         <junit-version>4.8.2</junit-version>
