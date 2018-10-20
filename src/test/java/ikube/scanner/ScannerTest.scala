@@ -14,8 +14,8 @@ class ScannerTest {
   val timeout = "100"
   val portRange = "0-1024"
   val ipRange = "192.168.1.1/24"
-  val ipAddress = "192.168.1.43"
-  val port = 8500
+  val ipAddress = "192.168.1.13"
+  val port = 22
 
   val scanner = Scanner
 
